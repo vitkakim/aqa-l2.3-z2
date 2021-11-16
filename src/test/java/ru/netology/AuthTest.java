@@ -15,7 +15,7 @@ public class AuthTest {
 
     @BeforeEach
     void setUp() {
-        open("http://localhost:9999");
+        open("http://localhost:9999/");
     }
 
     @Test
