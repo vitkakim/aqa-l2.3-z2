@@ -1,38 +1,44 @@
 package ru.netology;
 
-import io.restassured.builder.RequestSpecBuilder;
-import io.restassured.filter.log.LogDetail;
-import io.restassured.http.ContentType;
-import io.restassured.specification.RequestSpecification;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ru.netology.utilits.RegistrationDto;
+import ru.netology.utilits.LoginPage;
 
-import static io.restassured.RestAssured.given;
+import static com.codeborne.selenide.Condition.text;
+import static com.codeborne.selenide.Condition.visible;
+import static com.codeborne.selenide.Selectors.byText;
+import static com.codeborne.selenide.Selenide.$;
+import static com.codeborne.selenide.Selenide.open;
 
 public class AuthTest {
-    private static RequestSpecification requestSpec = new RequestSpecBuilder()
-            .setBaseUri("http://localhost")
-            .setPort(9999)
-            .setAccept(ContentType.JSON)
-            .setContentType(ContentType.JSON)
-            .log(LogDetail.ALL)
-            .build();
+    LoginPage logo = new LoginPage();
 
-    @BeforeAll
-    static void setUpAll() {
-        // сам запрос
-        given() // "дано"
-                .spec(requestSpec) // указываем, какую спецификацию используем
-                .body(new RegistrationDto("vasya", "password", "active")) // передаём в теле объект, который будет преобразован в JSON
-                .when() // "когда"
-                .post("/api/system/users") // на какой путь, относительно BaseUri отправляем запрос
-                .then() // "тогда ожидаем"
-                .statusCode(200); // код 200 OK
+    @BeforeEach
+    void setUp() {
+        open("http://localhost:9999");
     }
 
     @Test
-    void shouldTest() {
-        System.out.println("Должно быть ок");
+    void shouldBePositiveTest() {
+        logo.loginActiveUser();
+        $(byText("Личный кабинет")).shouldBe(visible);
+    }
+
+    @Test
+    void shouldBeNegativeTest() {
+        logo.loginBlockedUser();
+        $("[data-test-id='error-notification']").shouldHave(text("Ошибка! Пользователь заблокирован"));
+    }
+
+    @Test
+    void shouldBeWrongLoginTest() {
+        logo.wrongLogin();
+        $("[data-test-id='error-notification']").shouldHave(text("Неверно указан логин или пароль"));
+    }
+
+    @Test
+    void shouldBeWrongPasswordTest() {
+        logo.wrongPassword();
+        $("[data-test-id='error-notification']").shouldHave(text("Неверно указан логин или пароль"));
     }
 }
