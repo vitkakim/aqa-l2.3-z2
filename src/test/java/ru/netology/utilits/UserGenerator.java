@@ -11,10 +11,8 @@ import java.util.Locale;
 import static io.restassured.RestAssured.given;
 
 public class UserGenerator {
-    private Faker faker = new Faker(new Locale("en"));
-    private String login = faker.name().firstName();
-    private String password = faker.internet().password();
-    private static RequestSpecification requestSpec = new RequestSpecBuilder()
+    private static final Faker faker = new Faker(new Locale("en"));
+    private static final RequestSpecification requestSpec = new RequestSpecBuilder()
             .setBaseUri("http://localhost")
             .setPort(9999)
             .setAccept(ContentType.JSON)
@@ -22,6 +20,8 @@ public class UserGenerator {
             .log(LogDetail.ALL)
             .build();
 
+    private UserGenerator() {
+    }
 
     public static void setUpUser(RegistrationInfo user) {
         given()
@@ -33,15 +33,19 @@ public class UserGenerator {
                 .statusCode(200);
     }
 
-    public RegistrationInfo active() {
-        RegistrationInfo activeUser = new RegistrationInfo(login, password, "active");
-        setUpUser(activeUser);
-        return activeUser;
+    public static String getRandomLogin() {
+        String login = faker.name().firstName();
+        return login;
     }
 
-    public RegistrationInfo blocked() {
-        RegistrationInfo blockedUser = new RegistrationInfo(login, password, "blocked");
-        setUpUser(blockedUser);
-        return blockedUser;
+    public static String getRandomPassword() {
+        String password = faker.name().firstName();
+        return password;
+    }
+
+    public static RegistrationInfo getUser(String status) {
+        RegistrationInfo user = new RegistrationInfo(getRandomLogin(), getRandomPassword(), status);
+        setUpUser(user);
+        return user;
     }
 }
